@@ -32,6 +32,7 @@
             extensions = ["rust-src"];
           })
           elmPackages.elm
+          elmPackages.elm-live
         ];
       };
     });

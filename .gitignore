@@ -1,1 +1,5 @@
 target
+.envrc
+elm-stuff
+index.html
+.direnv

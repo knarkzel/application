@@ -17,6 +17,6 @@ cargo run
 
 ```
 cd frontend
-elm reactor
+elm-live src/Main.elm
 ```
 

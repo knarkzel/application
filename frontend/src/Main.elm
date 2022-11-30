@@ -1,8 +1,54 @@
 module Main exposing (..)
 
 import Browser
-import Html exposing (Html, button, div, text)
-import Html.Events exposing (onClick)
+import Element exposing (layout, padding, text)
+import Element.Border as Border
+import Element.Input as Input
+import Html exposing (Html)
+
+
+
+-- INIT
+
+
+type alias Model =
+    { text : String }
+
+
+init : Model
+init =
+    { text = "" }
+
+
+type Msg
+    = UserTypedText String
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+    layout [ padding 10 ] <|
+        Input.multiline
+            [ Border.rounded 5
+            ]
+            { onChange = UserTypedText
+            , text = model.text
+            , placeholder = Just <| Input.placeholder [] <| text "Type your message"
+            , label = Input.labelAbove [] <| text "Message"
+            , spellcheck = False
+            }
+
+
+
+-- UPDATE
+
+
+update : Msg -> Model -> Model
+update (UserTypedText text) model =
+    { model | text = text }
 
 
 
@@ -13,51 +59,6 @@ main : Program () Model Msg
 main =
     Browser.sandbox
         { init = init
-        , update = update
         , view = view
+        , update = update
         }
-
-
-
--- MODEL
-
-
-type alias Model =
-    Int
-
-
-init : Model
-init =
-    0
-
-
-
--- UPDATE
-
-
-type Msg
-    = Increment
-    | Decrement
-
-
-update : Msg -> Model -> Model
-update msg model =
-    case msg of
-        Increment ->
-            model + 1
-
-        Decrement ->
-            model - 1
-
-
-
--- VIEW
-
-
-view : Model -> Html Msg
-view model =
-    div []
-        [ button [ onClick Decrement ] [ text "-" ]
-        , div [] [ text (String.fromInt model) ]
-        , button [ onClick Increment ] [ text "+" ]
-        ]

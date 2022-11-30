@@ -1,5 +1,5 @@
-target
 .envrc
+.direnv
+target
 elm-stuff
 index.html
-.direnv

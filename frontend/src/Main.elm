@@ -8,6 +8,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Http
+import Json.Encode as Encode
+
 
 
 
@@ -45,6 +47,12 @@ init _ =
     ( { text = "" }, Cmd.none )
 
 
+-- TYPES
+node : Int -> Encode.Value
+node input =
+    Encode.object
+        [ ("input", Encode.int input) ]
+
 
 -- UPDATE
 
@@ -65,13 +73,15 @@ update msg model =
             ( model
             , Http.post
                 { url = "http://localhost:3000"
-                , body = Http.emptyBody
+                , body = Http.jsonBody (node (Maybe.withDefault 100 (String.toInt model.text)))
                 , expect = Http.expectString GotResponse
                 }
             )
 
         GotResponse response ->
-            ( model, Cmd.none )
+            case response of
+                Ok text -> ( { model | text = text }, Cmd.none )
+                Err _ -> ( { model | text = "Failed" }, Cmd.none )
 
 
 

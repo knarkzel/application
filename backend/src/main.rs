@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 use axum::{
     routing::post,
-    Router, Form, Json, http::Method,
+    Router, Json, http::Method,
 };
 use serde::{Deserialize, Serialize};
 use tower_http::cors::{CorsLayer, Any};
@@ -10,9 +10,7 @@ use tower_http::cors::{CorsLayer, Any};
 async fn main() {
     tracing_subscriber::fmt::init();
 
-    let cors = CorsLayer::new()
-        .allow_methods([Method::GET, Method::POST])
-        .allow_origin(Any);
+    let cors = CorsLayer::permissive();
 
     let app = Router::new()
         .route("/", post(run))
@@ -37,7 +35,7 @@ struct Output {
     value: i32,
 }
 
-async fn run(Form(node): Form<Node>) -> Json<Output> {
+async fn run(Json(node): Json<Node>) -> Json<Output> {
     let output = Output { value: node.input * 2 };
     Json(output)
 }

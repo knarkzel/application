@@ -31,15 +31,19 @@ type Msg
 view : Model -> Html Msg
 view model =
     layout [ padding 10 ] <|
-        Input.multiline
-            [ Border.rounded 5
-            ]
-            { onChange = UserTypedText
-            , text = model.text
-            , placeholder = Just <| Input.placeholder [] <| text "Type your message"
-            , label = Input.labelAbove [] <| text "Message"
-            , spellcheck = False
-            }
+        (textbox model)
+
+
+textbox model =
+    Input.multiline
+        [ Border.rounded 5
+        ]
+        { text = model.text
+        , onChange = UserTypedText
+        , placeholder = Just <| Input.placeholder [] <| text "Type your message"
+        , label = Input.labelAbove [] <| text "Message"
+        , spellcheck = False
+        }
 
 
 

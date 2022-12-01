@@ -31,6 +31,7 @@
           (rust.override {
             extensions = ["rust-src"];
           })
+          cargo-watch
           elmPackages.elm
           elmPackages.elm-live
         ];

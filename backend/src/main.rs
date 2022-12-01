@@ -1,25 +1,37 @@
 use std::net::SocketAddr;
 use axum::{
-    routing::get,
-    Router, response::Html,
+    routing::post,
+    Router, Form, Json,
 };
+use serde::{Deserialize, Serialize};
 
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt::init();
 
     let app = Router::new()
-        .route("/", get(index));
+        .route("/", post(run));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
-    tracing::debug!("Listening on {addr}");
+    tracing::info!("Listening on {addr}");
     
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
-        .expect("Failed to start axum");
+        .expect("Failed to start server");
 }
 
-async fn index() -> Html<&'static str> {
-    Html("<h1>Hello, World!</h1>")
+#[derive(Deserialize)]
+struct Node {
+    input: i32,
+}
+
+#[derive(Serialize)]
+struct Output {
+    value: i32,
+}
+
+async fn run(Form(node): Form<Node>) -> Json<Output> {
+    let output = Output { value: node.input * 2 };
+    Json(output)
 }

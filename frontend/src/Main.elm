@@ -79,8 +79,8 @@ runNode input =
 
 
 type Msg
-    = UpdateInput String
-    | RunNode
+    = RunNode 
+    | UpdateInput String
     | FinishNode (Result Http.Error Int)
 
 

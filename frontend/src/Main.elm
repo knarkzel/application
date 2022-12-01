@@ -1,7 +1,7 @@
 module Main exposing (..)
 
 import Browser
-import Element exposing (layout, padding, paddingXY, rgb255, row, spacing, text)
+import Element exposing (Element, fill, layout, minimum, padding, paddingXY, px, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -10,19 +10,6 @@ import Html exposing (Html)
 import Http
 import Json.Decode as D
 import Json.Encode as E
-
-
-
--- MAIN
-
-
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , subscriptions = subscriptions
-        , update = update
-        }
 
 
 
@@ -35,16 +22,29 @@ subscriptions model =
 
 
 
+-- MAIN
+
+
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+
 -- INIT
 
 
 type alias Model =
-    { text : String }
+    { input : String }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { text = "" }, Cmd.none )
+    ( { input = "" }, Cmd.none )
 
 
 
@@ -79,7 +79,7 @@ runNode input =
 
 
 type Msg
-    = RunNode 
+    = RunNode
     | UpdateInput String
     | FinishNode (Result Http.Error Int)
 
@@ -88,10 +88,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         UpdateInput text ->
-            ( { model | text = text }, Cmd.none )
+            ( { model | input = text }, Cmd.none )
 
         RunNode ->
-            case String.toInt model.text of
+            case String.toInt model.input of
                 Nothing ->
                     ( model, Cmd.none )
 
@@ -101,10 +101,10 @@ update msg model =
         FinishNode response ->
             case response of
                 Ok value ->
-                    ( { model | text = String.fromInt value }, Cmd.none )
+                    ( { model | input = String.fromInt value }, Cmd.none )
 
                 Err _ ->
-                    ( { model | text = "Failed" }, Cmd.none )
+                    ( { model | input = "Failed" }, Cmd.none )
 
 
 
@@ -120,11 +120,13 @@ view model =
             ]
 
 
+textbox : Model -> Element Msg
 textbox model =
     Input.multiline
         [ Border.rounded 5
+        , width (px 250)
         ]
-        { text = model.text
+        { text = model.input
         , onChange = UpdateInput
         , placeholder = Just <| Input.placeholder [] <| text "Type your input"
         , label = Input.labelLeft [] <| text "Input"
@@ -132,6 +134,7 @@ textbox model =
         }
 
 
+button : Model -> Element Msg
 button model =
     Input.button
         [ Border.rounded 5

@@ -8,8 +8,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Http
-import Json.Encode as E
 import Json.Decode as D
+import Json.Encode as E
 
 
 
@@ -53,48 +53,55 @@ init _ =
 
 node : Int -> E.Value
 node input =
-    E.object
-        [ ( "input", E.int input ) ]
+    E.object [ ( "input", E.int input ) ]
 
 
--- output : D.Decoder
--- output =
---     (D.field "value" Decode.int)
+output : D.Decoder Int
+output =
+    D.field "value" D.int
+
+
+
+-- HELPERS
+
+
+runNode : Int -> Cmd Msg
+runNode input =
+    Http.post
+        { url = "http://localhost:3000"
+        , body = Http.jsonBody (node input)
+        , expect = Http.expectJson FinishNode output
+        }
+
 
 
 -- UPDATE
 
 
 type Msg
-    = UserTypedText String
-    | UserClickButton
-    | GotResponse (Result Http.Error Int)
+    = UpdateInput String
+    | RunNode
+    | FinishNode (Result Http.Error Int)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        UserTypedText text ->
+        UpdateInput text ->
             ( { model | text = text }, Cmd.none )
 
-        UserClickButton ->
+        RunNode ->
             case String.toInt model.text of
                 Nothing ->
                     ( model, Cmd.none )
 
                 Just input ->
-                    ( model
-                    , Http.post
-                        { url = "http://localhost:3000"
-                        , body = Http.jsonBody (node input)
-                        , expect = Http.expectJson GotResponse (D.field "value" D.int)
-                        }
-                    )
+                    ( model, runNode input )
 
-        GotResponse response ->
+        FinishNode response ->
             case response of
-                Ok output ->
-                    ( { model | text = String.fromInt output }, Cmd.none )
+                Ok value ->
+                    ( { model | text = String.fromInt value }, Cmd.none )
 
                 Err _ ->
                     ( { model | text = "Failed" }, Cmd.none )
@@ -118,7 +125,7 @@ textbox model =
         [ Border.rounded 5
         ]
         { text = model.text
-        , onChange = UserTypedText
+        , onChange = UpdateInput
         , placeholder = Just <| Input.placeholder [] <| text "Type your input"
         , label = Input.labelLeft [] <| text "Input"
         , spellcheck = False
@@ -132,6 +139,6 @@ button model =
         , Background.color (rgb255 30 120 111)
         , Font.color (rgb255 255 255 255)
         ]
-        { onPress = Just UserClickButton
+        { onPress = Just RunNode
         , label = text "Submit"
         }

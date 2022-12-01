@@ -8,8 +8,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import Http
-import Json.Encode as Encode
-
+import Json.Encode as E
+import Json.Decode as D
 
 
 
@@ -47,11 +47,19 @@ init _ =
     ( { text = "" }, Cmd.none )
 
 
+
 -- TYPES
-node : Int -> Encode.Value
+
+
+node : Int -> E.Value
 node input =
-    Encode.object
-        [ ("input", Encode.int input) ]
+    E.object
+        [ ( "input", E.int input ) ]
+
+
+-- output : D.Decoder
+-- output =
+--     (D.field "value" Decode.int)
 
 
 -- UPDATE
@@ -60,7 +68,7 @@ node input =
 type Msg
     = UserTypedText String
     | UserClickButton
-    | GotResponse (Result Http.Error String)
+    | GotResponse (Result Http.Error Int)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -70,18 +78,26 @@ update msg model =
             ( { model | text = text }, Cmd.none )
 
         UserClickButton ->
-            ( model
-            , Http.post
-                { url = "http://localhost:3000"
-                , body = Http.jsonBody (node (Maybe.withDefault 100 (String.toInt model.text)))
-                , expect = Http.expectString GotResponse
-                }
-            )
+            case String.toInt model.text of
+                Nothing ->
+                    ( model, Cmd.none )
+
+                Just input ->
+                    ( model
+                    , Http.post
+                        { url = "http://localhost:3000"
+                        , body = Http.jsonBody (node input)
+                        , expect = Http.expectJson GotResponse (D.field "value" D.int)
+                        }
+                    )
 
         GotResponse response ->
             case response of
-                Ok text -> ( { model | text = text }, Cmd.none )
-                Err _ -> ( { model | text = "Failed" }, Cmd.none )
+                Ok output ->
+                    ( { model | text = String.fromInt output }, Cmd.none )
+
+                Err _ ->
+                    ( { model | text = "Failed" }, Cmd.none )
 
 
 
